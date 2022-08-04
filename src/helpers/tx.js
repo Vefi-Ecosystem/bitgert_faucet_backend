@@ -4,11 +4,12 @@ const { AddressZero } = require('@ethersproject/constants');
 const { Transaction } = require('@ethereumjs/tx');
 const { default: Common } = require('@ethereumjs/common');
 const { parseEther, parseUnits } = require('@ethersproject/units');
-const abi = require('../assets/abi.json');
+const faucetAbi = require('../assets/faucetABI.json');
+const erc20Abi = require('../assets/erc20ABI.json');
 const { faucetAddress } = require('../constants');
 
-const faucetAbiInterface = new Interface(abi);
-const erc20AbiInterface = new Interface(null);
+const faucetAbiInterface = new Interface(faucetAbi);
+const erc20AbiInterface = new Interface(erc20Abi);
 
 function estimateGas(tx) {
   return new Promise((resolve, reject) => {
