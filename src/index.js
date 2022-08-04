@@ -15,6 +15,10 @@ router.get('/', (req, res) =>
 router.post('/dispense', async (req, res) => {
   try {
     const { ip, body } = req;
+    const ipIsCached = await isCached(ip);
+    const addressIsCached = await isCached(body.to);
+
+    if (ipIsCached || addressIsCached) return res.status(400).json({});
   } catch (err) {}
 });
 
