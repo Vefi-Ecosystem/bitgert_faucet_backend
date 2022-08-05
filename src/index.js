@@ -35,9 +35,28 @@ router.post('/dispense', async (req, res) => {
   }
 });
 
-router.get('/cacheStatus', async (req, res) => {
-  const cached = await isCached(req.ip);
-  return res.status(200).json({ cached });
+router.post('/addDispenser', async (req, res) => {
+  try {
+    const { pk, address } = req.body;
+    const result = await addDispenser(address, pk);
+    return res.status(200).json({
+      result
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/removeDispenser', async (req, res) => {
+  try {
+    const { pk, address } = req.body;
+    const result = await removeDispenser(address, pk);
+    return res.status(200).json({
+      result
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
 });
 
 app.use(express.json());
