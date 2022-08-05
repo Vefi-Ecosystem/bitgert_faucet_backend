@@ -6,7 +6,8 @@ const { default: Common } = require('@ethereumjs/common');
 const { parseEther, parseUnits } = require('@ethersproject/units');
 const faucetAbi = require('../assets/faucetABI.json');
 const erc20Abi = require('../assets/erc20ABI.json');
-const { faucetAddress } = require('../constants');
+const { faucetAddress, faucetOperator, faucetCreator } = require('../constants');
+const { privateKey } = require('../env');
 
 const faucetAbiInterface = new Interface(faucetAbi);
 const erc20AbiInterface = new Interface(erc20Abi);
@@ -55,7 +56,7 @@ module.exports.dispense = async function (token, to, amount) {
       val = parseUnits(amount.toString(), decimals).toHexString();
     }
     const data = faucetAbiInterface.encodeFunctionData('dispense(address,address,uint256)', [token, to, val]);
-    const nonce = await getNonce('');
+    const nonce = await getNonce(faucetOperator);
     const gasLimit = await estimateGas({
       to: faucetAddress,
       value: '0x0',
@@ -73,7 +74,59 @@ module.exports.dispense = async function (token, to, amount) {
       },
       { common: Common.custom({ chainId: 64664 }) }
     );
-    const signedTx = tx.sign(Buffer.from('', 'hex'));
+    const signedTx = tx.sign(Buffer.from(privateKey, 'hex'));
+    const hex = '0x'.concat(signedTx.serialize().toString('hex'));
+    const hash = await broadcastTransaction(hex);
+    return Promise.resolve(hash);
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+/**
+ *
+ * @param {string} address
+ * @param {string} pKey
+ */
+module.exports.addDispenser = async function (address, pKey) {
+  try {
+    const data = faucetAbiInterface.encodeFunctionData('addDispenser(address)', [address]);
+    const nonce = await getNonce(faucetCreator);
+    const tx = Transaction.fromTxData({
+      nonce,
+      data,
+      to: faucetAddress,
+      value: '0x0',
+      gasLimit: '0x55F0',
+      gasPrice: parseUnits('10', 'gwei').toHexString()
+    });
+    const signedTx = tx.sign(Buffer.from(pKey, 'hex'));
+    const hex = '0x'.concat(signedTx.serialize().toString('hex'));
+    const hash = await broadcastTransaction(hex);
+    return Promise.resolve(hash);
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+/**
+ *
+ * @param {string} address
+ * @param {string} pKey
+ */
+module.exports.removeDispenser = async function (address, pKey) {
+  try {
+    const data = faucetAbiInterface.encodeFunctionData('removeDispenser(address)', [address]);
+    const nonce = await getNonce(faucetCreator);
+    const tx = Transaction.fromTxData({
+      nonce,
+      data,
+      to: faucetAddress,
+      value: '0x0',
+      gasLimit: '0x55F0',
+      gasPrice: parseUnits('10', 'gwei').toHexString()
+    });
+    const signedTx = tx.sign(Buffer.from(pKey, 'hex'));
     const hex = '0x'.concat(signedTx.serialize().toString('hex'));
     const hash = await broadcastTransaction(hex);
     return Promise.resolve(hash);

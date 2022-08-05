@@ -1,6 +1,7 @@
 const express = require('express');
 const requestIp = require('@supercharge/request-ip');
 const { initConnection, cacheIpOrAddress, isCached } = require('./caching');
+const { dispense, addDispenser, removeDispenser } = require('./helpers/tx');
 
 const app = express();
 const router = express.Router();
@@ -18,8 +19,20 @@ router.post('/dispense', async (req, res) => {
     const ipIsCached = await isCached(ip);
     const addressIsCached = await isCached(body.to);
 
-    if (ipIsCached || addressIsCached) return res.status(400).json({});
-  } catch (err) {}
+    if (ipIsCached || addressIsCached)
+      return res.status(400).json({
+        error: 'You have been greylisted. You must wait for 24 hours to make another request.'
+      });
+
+    const hash = await dispense(body.token, body.to, body.amount);
+    await cacheIpOrAddress(ip);
+    await cacheIpOrAddress(body.to);
+    return res.status(200).json({
+      result: `Deposit has been made for ${body.to}. Hash: ${hash}`
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
 });
 
 router.get('/cacheStatus', async (req, res) => {
