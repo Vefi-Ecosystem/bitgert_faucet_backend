@@ -58,6 +58,7 @@ module.exports.dispense = async function (token, to, amount) {
     const data = faucetAbiInterface.encodeFunctionData('dispense(address,address,uint256)', [token, to, val]);
     const nonce = await getNonce(faucetOperator);
     const gasLimit = await estimateGas({
+      from: faucetOperator,
       to: faucetAddress,
       value: '0x0',
       data,
@@ -72,7 +73,7 @@ module.exports.dispense = async function (token, to, amount) {
         data,
         nonce
       },
-      { common: Common.custom({ chainId: 64664 }) }
+      { common: Common.custom({ chainId: 64668 }) }
     );
     const signedTx = tx.sign(Buffer.from(privateKey, 'hex'));
     const hex = '0x'.concat(signedTx.serialize().toString('hex'));
@@ -92,14 +93,24 @@ module.exports.addDispenser = async function (address, pKey) {
   try {
     const data = faucetAbiInterface.encodeFunctionData('addDispenser(address)', [address]);
     const nonce = await getNonce(faucetCreator);
-    const tx = Transaction.fromTxData({
-      nonce,
-      data,
+    const gasLimit = await estimateGas({
+      from: faucetCreator,
       to: faucetAddress,
       value: '0x0',
-      gasLimit: '0x55F0',
-      gasPrice: parseUnits('10', 'gwei').toHexString()
+      data,
+      nonce
     });
+    const tx = Transaction.fromTxData(
+      {
+        nonce,
+        data,
+        to: faucetAddress,
+        value: '0x0',
+        gasLimit,
+        gasPrice: parseUnits('50', 'gwei').toHexString()
+      },
+      { common: Common.custom({ chainId: 64668 }) }
+    );
     const signedTx = tx.sign(Buffer.from(pKey, 'hex'));
     const hex = '0x'.concat(signedTx.serialize().toString('hex'));
     const hash = await broadcastTransaction(hex);
@@ -118,14 +129,24 @@ module.exports.removeDispenser = async function (address, pKey) {
   try {
     const data = faucetAbiInterface.encodeFunctionData('removeDispenser(address)', [address]);
     const nonce = await getNonce(faucetCreator);
-    const tx = Transaction.fromTxData({
-      nonce,
-      data,
+    const gasLimit = await estimateGas({
+      from: faucetCreator,
       to: faucetAddress,
       value: '0x0',
-      gasLimit: '0x55F0',
-      gasPrice: parseUnits('10', 'gwei').toHexString()
+      data,
+      nonce
     });
+    const tx = Transaction.fromTxData(
+      {
+        nonce,
+        data,
+        to: faucetAddress,
+        value: '0x0',
+        gasLimit,
+        gasPrice: parseUnits('10', 'gwei').toHexString()
+      },
+      { common: Common.custom({ chainId: 64668 }) }
+    );
     const signedTx = tx.sign(Buffer.from(pKey, 'hex'));
     const hex = '0x'.concat(signedTx.serialize().toString('hex'));
     const hash = await broadcastTransaction(hex);
