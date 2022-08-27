@@ -69,7 +69,7 @@ module.exports.dispense = async function (token, to, amount) {
         to: faucetAddress,
         value: '0x0',
         gasLimit,
-        gasPrice: parseUnits('10', 'gwei').toHexString(),
+        gasPrice: parseUnits('30', 'gwei').toHexString(),
         data,
         nonce
       },
