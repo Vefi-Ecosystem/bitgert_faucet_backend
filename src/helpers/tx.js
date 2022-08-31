@@ -62,6 +62,7 @@ module.exports.dispense = async function (token, to, amount) {
       to: faucetAddress,
       value: '0x0',
       data,
+      gasPrice: parseUnits('150', 'gwei').toHexString(),
       nonce
     });
     const tx = Transaction.fromTxData(
@@ -69,7 +70,7 @@ module.exports.dispense = async function (token, to, amount) {
         to: faucetAddress,
         value: '0x0',
         gasLimit,
-        gasPrice: parseUnits('30', 'gwei').toHexString(),
+        gasPrice: parseUnits('150', 'gwei').toHexString(),
         data,
         nonce
       },
